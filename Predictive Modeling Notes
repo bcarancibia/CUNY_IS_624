@@ -1,0 +1,105 @@
+Predictive Modeling Notes
+---------
+
+Week 1 
+https://www.otexts.org/fpp/2/1
+HA - Chapter 2
+
+Always plot the data first
+
+```
+library(fpp)
+
+plot(melsyd[,"Economy.Class"], 
+  main="Economy class passengers: Melbourne-Sydney",
+  xlab="Year",ylab="Thousands")
+
+```
+
+time series patterns - there are two words used to describe patterns trend and seasonal
+
+A trend exists when there is a long-term increase or decrease in the data. There is a trend in the antidiabetic drug sales data shown above
+
+A seasonal pattern occurs when a time series is affected by seasonal factors such as the time of the year or the day of the week. The monthly sales of antidiabetic drugs above shows seasonality partly induced by the change in cost of the drugs at the end of the calendar year.
+
+A cycle occurs when the data exhibit rises and falls that are not of a fixed period. These fluctuations are usually due to economic conditions and are often related to the "business cycle". The economy class passenger data above showed some indications of cyclic effects.
+
+Seasonal patterns have a fixed and known length, while cyclic patterns have variable and unknown length.
+
+QUESTION: trend vs seasonale plot?
+
+scatter plots - useful for cross sectional data
+
+Numerical data summaries
+
+Univariante statistics
+For a single data set, the most widely used statistics are the average and median.
+
+average is also called the sample mean.
+
+median is the middle observation when the data are placed in order.
+
+Standard deviation: describe distribution of the data
+
+Bivariate Statistics
+The most commonly used bivariate statistic is the correlation coefficient 
+
+autocorrelation measures the linear relationship between lagged values of a time series
+
+Simple Forecasting Methods
+
+Average Method: forecasts of all future values are equal to the mean of the historical data - BOTH TIME SERIES AND CROSS SECTIONAL
+
+meanf(y, h) 
+
+Naïve method: All forecasts are simply set to be the value of the last observation. Works well with financial data. Can only be used with time series data
+
+naive(y, h)
+rwf(y, h) # Alternative
+
+Seasonal naïve method: each forecast to be equal to the last observed value from the same season of the year (e.g., the same month of the previous year)
+
+snaive(y, h)
+
+Drift Method: A variation on the naïve method is to allow the forecasts to increase or decrease over time, where the amount of change over time (called the drift) is set to be the average change seen in the historical data.
+
+rwf(y, h, drift=TRUE)
+
+Transformations and Adjustments
+Adjusting the historical data can often lead to a simpler forecasting model
+
+Mathematical Transformations: If the data show variation that increases or decreases with the level of the series, then a transformation can be useful.
+
+Log transformations
+power transformations (square root, cube root)
+"Box-Cox transformations": The logarithm in a Box-Cox transformation is always a natural logarithm (i.e., to base e). So if λ=0, natural logarithms are used, but if λ≠0, a power transformation is used followed by some simple scaling.
+
+Calendar Adjustments: Some variation seen in seasonal data may be due to simple calendar effects. In such cases, it is usually much easier to remove the variation before fitting a forecasting model.
+
+Population Adjustments: Any data that are affected by population changes can be adjusted to give per-capita data. That is, consider the data per person (or per thousand people, or per million people) rather than the total.
+
+Inflation Adjustments: Data that are affected by the value of money are best adjusted before modelling. 
+
+Evaluating Forecast Accuracy 
+
+Accuracy measures that are based on ei are therefore scale-dependent and cannot be used to make comparisons between series that are on different scales.
+
+Scale Dependent Errors: The two most commonly used scale-dependent measures are based on the absolute errors or squared errors
+
+Percentage Errors: Percentage errors have the advantage of being scale-independent, and so are frequently used to compare forecast performance between different data sets. The most commonly used measure is Mean absolute percentage error
+
+Scaled Errors: mean absolute scaled error. an alternative to using percentage errors when comparing forecast accuracy across series on different scales
+
+Residual diagnostics: A residual in forecasting is the difference between an observed value and its forecast based on other observations: ei=yi−y^i.
+
+A good forecasting method will yield residuals with the following properties:
+1)The residuals are uncorrelated. If there are correlations between residuals, then there is information left in the residuals which should be used in computing forecasts.
+2)The residuals have zero mean. If the residuals have a mean other than zero, then the forecasts are biased.
+
+
+Prediction Intervals: prediction interval gives an interval within which we expect yi to lie with a specified probability.
+
+KJ - Chapter 3 and 4
+
+Data Preprocessing (chapter 3)
+

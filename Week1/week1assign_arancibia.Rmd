@@ -1,0 +1,31 @@
+---
+title: "Week 1 Assignment"
+author: "Ben Arancibia"
+date: "June 11, 2015"
+output: pdf_document
+---
+
+
+####HA 2.1
+
+For each of the following series (from the fma package), make a graph of the data. If transforming seems appropriate, do so and describe the effect.
+
+```{r}
+library(fma)
+```
+
+a) Monthly total of people on unemployed benefits in Australia (January 1956–July 1992).
+
+```{r}
+lambda.benefits <- BoxCox.lambda(dole)
+
+plot(BoxCox(dole, lambda.benefits), main="Monthly People on Benefits", xlab="1956-1992", ylab="Number of people(Box-Cox transformed)")
+
+title(main=paste("Box Cox lambda = ", signif(lambda.benefits, digits=3)), font.main=8, line=-1)
+
+```
+
+
+b) Monthly total of accidental deaths in the United States (January 1973–December 1978).
+
+c) Quarterly production of bricks (in millions of units) at Portland, Australia (March 1956–September 1994).

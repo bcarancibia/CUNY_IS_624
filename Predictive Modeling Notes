@@ -103,3 +103,12 @@ KJ - Chapter 3 and 4
 
 Data Preprocessing (chapter 3)
 
+Data Transformation for Individual Predictors
+
+Centering and Scaling: center scale the predictor variables. To center a predictor variable, the average predictor value is subtracted from all the values. As a result of centering, the predictor has a zero mean. To scale the data, each value of the predictor variable is divided by its standard deviation. Scaling the data coerce the values to have a common standard deviation of one. 
+
+used to improve the numerical stability of some calculations.
+
+Box and Cox
+
+Data Reduction Techniques: Data reduction techniques are another class of predictor transformations. These methods reduce the data by generating a smaller set of predictors that seek to capture a majority of the information in the original variables.

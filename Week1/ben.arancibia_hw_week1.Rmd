@@ -35,3 +35,14 @@ plot(BoxCox(bricksq, lambda.bricks), main="Quarterly Production Bricks", xlab="1
 title(main=paste("Box Cox lambda = ", signif(lambda.bricks, digits=3)), font.main=8, line=-1)
 ```
 
+####HA 2.3
+Consider the daily closing IBM stock prices (data set ibmclose).
+a)Produce some plots of the data in order to become familiar with it.
+```{r}
+plot(ibmclose)
+tsdisplay(ibmclose)
+```
+b)Split the data into a training set of 300 observations and a test set of 69 observations.
+
+c)Try various benchmark methods to forecast the training set and compare the results on the test set. Which method did best?
+

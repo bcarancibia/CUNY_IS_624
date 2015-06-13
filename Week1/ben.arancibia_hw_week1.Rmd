@@ -17,21 +17,24 @@ library(fma)
 a) Monthly total of people on unemployed benefits in Australia (January 1956–July 1992).
 ```{r}
 lambda.benefits <- BoxCox.lambda(dole)
-plot(BoxCox(dole, lambda.benefits), main="Monthly People on Benefits", xlab="1956-1992", ylab="Number of people(Box-Cox transformed)")
+plot(BoxCox(dole, lambda.benefits), main="Monthly People on Benefits", 
+     xlab="1956-1992", ylab="Number of people(Box-Cox transformed)")
 title(main=paste("Box Cox lambda = ", signif(lambda.benefits, digits=3)), font.main=8, line=-1)
 ```
 
 b) Monthly total of accidental deaths in the United States (January 1973–December 1978).
 ```{r}
 lambda.deaths <- BoxCox.lambda(usdeaths)
-plot(BoxCox(usdeaths, lambda.deaths), main="Monthly Accidental Deaths", xlab="1973-1978", ylab="Number of people(Box-Cox transformed)")
+plot(BoxCox(usdeaths, lambda.deaths), main="Monthly Accidental Deaths", 
+     xlab="1973-1978", ylab="Number of people(Box-Cox transformed)")
 title(main=paste("Box Cox lambda = ", signif(lambda.deaths, digits=3)), font.main=8, line=-1)
 ```
 
 c) Quarterly production of bricks (in millions of units) at Portland, Australia (March 1956–September 1994).
 ```{r}
 lambda.bricks <- BoxCox.lambda(bricksq)
-plot(BoxCox(bricksq, lambda.bricks), main="Quarterly Production Bricks", xlab="1973-1978", ylab="Number of bricks(Box-Cox transformed)")
+plot(BoxCox(bricksq, lambda.bricks), main="Quarterly Production Bricks", 
+     xlab="1973-1978", ylab="Number of bricks(Box-Cox transformed)")
 title(main=paste("Box Cox lambda = ", signif(lambda.bricks, digits=3)), font.main=8, line=-1)
 ```
 
@@ -82,14 +85,154 @@ test2 <- hsales[253:275]
 ```
 c)Try various benchmark methods to forecast the training set and compare the results on the test set. Which method did best?
 ```{r}
-hs2 <- window(hsales , end=1993)
-plot(hsales,main="Home sales Until 1993",
-  ylab="",xlab="Day",xlim=c(1973,1993))
+hs2 <- window(hsales, end=1993)
+plot(hsales,main="Home sales until 1995",
+  ylab="",xlab="Day",xlim=c(1973,1995))
 lines(meanf(hs2,h=23)$mean,col=4)
 lines(snaive(hs2, h=23)$mean,col=5)
 lines(rwf(hs2,h=23)$mean,col=2)
 lines(rwf(hs2,drift=TRUE,h=23)$mean,col=3)
-legend("topright",lty=1,col=c(4, 5 ,2 ,3),
-  legend=c("Mean method","Seasonal Naive","Naive method","Drift method"))
+legend("topright",lty=1,col=c(4, 5 ,2 ,3),legend=c("Mean method","Seasonal Naive","Naive method","Drift method"))
 ```
+
+The seasonal naive forecast did the best in predicting the Home sales. 
+
+####KJ 3.2
+```{r}
+library(mlbench)
+data(Soybean)
+```
+
+a) Investigate the frequency distributions for the categorical predictors. Are any of the distributions degenerate in the ways disscused in chapter 3?
+```{r}
+str(Soybean)
+```
+
+Looking at the output shows that some factor levels of some predictors are not informative i.e. temp. Also, trying to show all the frequency distributions means making a table with 2^31 elements (2147483648). As a result going to focus on the frequency distribution of temp, date, and precip. Change the integer to actual values using the record from car pacakage.
+```{r}
+soybean2 <- Soybean
+table(soybean2$temp, useNA = "always")
+library(car)
+soybean2$temp <- recode(soybean2$temp, 
+                       "0 = 'low'; 1 = 'norm'; 2 = 'high'; NA = 'missing'",
+                       levels = c("low", "norm", "high", "missing"))
+table(soybean2$temp)
+
+table(soybean2$date, useNA = "always")
+soybean2$date <- recode(soybean2$date, 
+                       "0 ='apr';1='may';2='june';3='july';4='aug';5='sept';6='oct';NA = 'missing'",
+                       levels = c("apr", "may", "june", "july", "aug", "sept", "missing"))
+table(soybean2$date)
+
+table(soybean2$precip, useNA = "always")
+soybean2$precip <- recode(soybean2$precip, 
+                       "0 = 'low'; 1 = 'norm'; 2 = 'high'; NA = 'missing'",
+                       levels = c("low", "norm", "high", "missing"))
+table(soybean2$precip)
+
+library(lattice)
+barchart(table(soybean2$date, soybean2$temp),auto.key = list(columns = 4, title = "temperature"))
+```
+
+Frequency
+```{r}
+table(Soybean$Class, complete.cases(Soybean))
+```
+
+b) Roughly 18% of the data are missing. Are there particular predictors that are more likely to be missing? Is the pattern of missing data related to the classes?
+
+First take a look at the missing data distribution. The results show that some classes are more problematic than others:
+```{r}
+hasMissing <- unlist(lapply(Soybean, function(x) any(is.na(x))))
+hasMissing <- names(hasMissing)[hasMissing]
+head(hasMissing)
+```
+
+There are several classes where all of the samples have at least one missing predictor value. It is important to know if they are in a single predictor that can be removed or multiple. First get the percentage of missing values for each predictor by class:
+```{r}
+predclass <- apply(Soybean[, hasMissing], 2, function(x, y) 
+  {
+  tab <- table(is.na(x), y)
+  tab[2,]/apply(tab, 2, sum)
+  }, y = Soybean$Class)
+
+## eliminate any rows and columns with no missing values
+
+predclass <- predclass[apply(predclass, 1, sum) > 0,]
+predclass <- predclass[, apply(predclass, 2, sum) > 0]
+
+t(predclass)
+```
+
+There are many predictors completely missing for the, 2-4-d-injury, cyst-nematode, and herbicide-injury classes. The phytophthora-rot class has a high rate of missing data across many predictors and the diaporthe-pod-&-stem-blight has a more moderate pattern of missing data.
+
+c) Develop a strategy for handling missing data, either by eliminating predictors or imputation.
+
+One way to handling missing data is to use an imputation technique. Imputation will not help since almost 100 percent of the predictor values will need to be imputed in a few cases. Another way is to subset the missing as another level or remove the classes associated with the high rate of missing values from the data. 
+
+####KJ 4.4
+
+Brodnjak-Vonina et al. develop a methodology for food laboratories to determine the type of oil from a sample. Load in the data
+
+```{r}
+library(caret)
+data(oil)
+str(oilType)
+table(oilType)
+```
+
+a) Use the sample function in base R create a completely random sample of 60 oils and look how closely the frequencies of the random sample match of the original samples. Repeat to understand variation in the sampling process.
+
+Create 20 splits:
+```{r}
+set.seed(629)
+oilSplits <- vector(mode = "list", length = 20)
+for(i in seq(along = oilSplits)) oilSplits[[i]] <- table(sample(oilType, size = 60))
+head(oilSplits, 3)
+
+##combine
+oilSplits <- do.call("rbind", oilSplits)
+head(oilSplits, 3)
+
+## distribution of classes
+summary(oilSplits/60)
+```
+
+Using a stratified random sample using createDataPartition:
+```{r}
+set.seed(629)
+oilSplits2 <- createDataPartition(oilType, p = .60, times = 20)
+oilSplits2 <- lapply(oilSplits2, function(x, y) table(y[x]), y = oilType)
+head(oilSplits2, 3)
+oilSplits2 <- do.call("rbind", oilSplits2)
+summary(oilSplits2/60)
+```
+
+The sampling done using createDataPartition has much less variability that using the sample function. Each partition has at least one sample in each class. 
+
+c) What are the options for determining performance of the model? 
+
+For determining performance of the model one way would be leave--one--out cross--validation, with the exception of class $G$, each class is represented in each resample. Some classification models require at least one sample from each class, so resampling these data may place a restriction one which models can be used. 
+
+For a test set, leave--one--out cross--validation is a method for assessing performance. A test set could be used if it only consisted of the classes with the most samples although this would only protect against gross overfitting.
+
+
+d) Look at different sample sizes and accuracy rates to understand the trade-off bteween the uncertainty in the results, the model performance, and the test set size.
+
+Below is the code for the width plot of a binomial confidence interval for overall accuracy for different sample sizes and accuracy rates.
+```{r}
+binom.test(16,20)
+
+getWidth <- function(values) {
+  binom.test(x = floor(values["size"]*values["accuracy"])+1, 
+             n = values["size"])$conf.int
+}
+
+ciInfo <- expand.grid(size = 10:30, accuracy = seq(.7, .95, by = 0.01))
+ciWidths <- t(apply(ciInfo, 1, getWidth))
+head(ciWidths)
+ciInfo$length <- ciWidths[,2] - ciWidths[,1]
+levelplot(length ~ size * accuracy, data = ciInfo)
+```
+
 

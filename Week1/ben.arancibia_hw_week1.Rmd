@@ -43,6 +43,53 @@ plot(ibmclose)
 tsdisplay(ibmclose)
 ```
 b)Split the data into a training set of 300 observations and a test set of 69 observations.
+```{r}
+training <- ibmclose[1:300]
+test <- ibmclose[301:369]
+```
 
 c)Try various benchmark methods to forecast the training set and compare the results on the test set. Which method did best?
+```{r}
+ibm2 <- window(training)
+ibmfit <- meanf(ibm2, h=69)
+ibmfit2 <- naive(ibm2, h=69)
+ibmfit3 <- snaive(ibm2, h=69)
+ibmfit4 <- rwf(ibm2, h=69, drift=TRUE)
+
+plot(ibmclose, plot.conf=FALSE, main="Forecasts of IBM Close")
+lines(ibmfit$mean,col=5)
+lines(ibmfit2$mean,col=2)
+lines(ibmfit3$mean,col=3)
+lines(ibmfit4$mean,col=4)
+legend("bottomleft",lty=1,col=c(5,2,3,4),
+legend=c("Mean method","Naive method","Seasonal naive method", "Drift Method"))
+
+```
+
+The Drift Method did the best. One thing to note is that when I plot the seasonal naive method and the naive method, they are on top of each other. It makes it look like one did not plot, but one just obscures the other.
+
+####HA 2.4
+
+Consider the sales of new one-family houses in the USA, Jan 1973 – Nov 1995 (data set hsales).
+a) Produce some plots of the data in order to become familiar with it.
+```{r}
+plot(hsales)
+```
+b)Split the hsales data set into a training set and a test set, where the test set is the last two years of data.
+```{r}
+training2 <- hsales[1:252]
+test2 <- hsales[253:275]
+```
+c)Try various benchmark methods to forecast the training set and compare the results on the test set. Which method did best?
+```{r}
+hs2 <- window(hsales , end=1993)
+plot(hsales,main="Home sales Until 1993",
+  ylab="",xlab="Day",xlim=c(1973,1993))
+lines(meanf(hs2,h=23)$mean,col=4)
+lines(snaive(hs2, h=23)$mean,col=5)
+lines(rwf(hs2,h=23)$mean,col=2)
+lines(rwf(hs2,drift=TRUE,h=23)$mean,col=3)
+legend("topright",lty=1,col=c(4, 5 ,2 ,3),
+  legend=c("Mean method","Seasonal Naive","Naive method","Drift method"))
+```
 

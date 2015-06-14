@@ -12,6 +12,8 @@ For each of the following series (from the fma package), make a graph of the dat
 
 ```{r}
 library(fma)
+library(mlbench)
+library(lattice)
 ```
 
 a) Monthly total of people on unemployed benefits in Australia (January 1956–July 1992).
@@ -99,7 +101,6 @@ The seasonal naive forecast did the best in predicting the Home sales.
 
 ####KJ 3.2
 ```{r}
-library(mlbench)
 data(Soybean)
 ```
 
@@ -130,7 +131,6 @@ soybean2$precip <- recode(soybean2$precip,
                        levels = c("low", "norm", "high", "missing"))
 table(soybean2$precip)
 
-library(lattice)
 barchart(table(soybean2$date, soybean2$temp),auto.key = list(columns = 4, title = "temperature"))
 ```
 
@@ -216,23 +216,28 @@ For determining performance of the model one way would be leave--one--out cross-
 
 For a test set, leave--one--out cross--validation is a method for assessing performance. A test set could be used if it only consisted of the classes with the most samples although this would only protect against gross overfitting.
 
-
 d) Look at different sample sizes and accuracy rates to understand the trade-off bteween the uncertainty in the results, the model performance, and the test set size.
 
-Below is the code for the width plot of a binomial confidence interval for overall accuracy for different sample sizes and accuracy rates.
+
 ```{r}
 binom.test(16,20)
+```
 
+Below is the code for the width plot of a binomial confidence interval for overall accuracy for different sample sizes and accuracy rates.
+
+```{r}
 getWidth <- function(values) {
   binom.test(x = floor(values["size"]*values["accuracy"])+1, 
              n = values["size"])$conf.int
-}
+  }
 
-ciInfo <- expand.grid(size = 10:30, accuracy = seq(.7, .95, by = 0.01))
-ciWidths <- t(apply(ciInfo, 1, getWidth))
+cigraph <- expand.grid(size = 1:20, accuracy = seq(.7, .95, by = 0.01))
+ciWidths <- t(apply(cigraph, 1, getWidth))
 head(ciWidths)
-ciInfo$length <- ciWidths[,2] - ciWidths[,1]
-levelplot(length ~ size * accuracy, data = ciInfo)
+cigraph$length <- ciWidths[,2] - ciWidths[,1]
+levelplot(length ~ size * accuracy, data = cigraph)
 ```
+
+Notes: This article was used for understain the trade-off between the uncertainity in the results, model performance and test set size.
 
 

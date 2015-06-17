@@ -239,5 +239,6 @@ levelplot(length ~ size * accuracy, data = cigraph)
 ```
 
 Notes: This article was used for understain the trade-off between the uncertainity in the results, model performance and test set size.
+[paper here](http://www.researchgate.net/publication/220555205_Trade-off_between_sample_size_and_accuracy_Case_of_measurements_under_interval_uncertainty)
 
 

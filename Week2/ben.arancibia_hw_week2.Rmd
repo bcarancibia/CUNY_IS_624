@@ -1,0 +1,54 @@
+---
+title: "Week 2 Homework"
+author: "Ben Arancibia"
+date: "June 20, 2015"
+output: pdf_document
+---
+
+#### HA 4.1
+
+Electricity consumption was recorded for a small town on 12 randomly chosen days. The following maximum temperatures (degrees Celsius) and consumption (megawatt-hours) were recorded for each day. 
+
+```{r, comment=FALSE,warning=FALSE,message=FALSE}
+library(fpp)
+```
+```{r}
+knitr::kable(econsumption)
+```
+
+a) Plot the data and find the regression model for Mwh with temperature as an explanatory variable. Why is there a negative relationship?
+
+```{r}
+plot(Mwh ~ temp, data=econsumption)
+fit  <- lm(Mwh ~ temp, data=econsumption)
+summary(fit)
+```
+
+It seems that there is a negative relationship because a simple linear model is not appropriate. A non-linear model will be necessary for the data.
+
+b) Produce a residual plot. Is the model adequate? Are there any outliers or influential observations?
+
+```{r}
+plot(residuals(fit)~temp, data=econsumption)
+```
+
+The model appears to be adequate, there is no apparent pattern. The only thing that might cause an issues is 1 outlier at temperature 23.4.
+
+
+c) Use the model to predict the electricity consumption that you would expect for a day with maximum temperature 10 and a day with maximum temperature 35. Do you believe these predictions?
+
+```{r}
+fcast <- forecast(fit, newdata=data.frame(temp=c(10,35)))
+plot(fcast)
+```
+
+Based on the predictive intervals and the nearby data points, the predictions are believable.
+
+d) Give prediction intervals for your forecasts. The following R code will get you started:
+
+```{r}
+summary(fit)
+forecast(fit, newdata=data.frame(temp=c(60)))
+```
+
+####HA 5.2

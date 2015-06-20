@@ -1,7 +1,7 @@
 Predictive Modeling Notes
 ---------
 
-####Week 1 
+Week 1 
 https://www.otexts.org/fpp/2/1
 HA - Chapter 2
 
@@ -112,18 +112,4 @@ used to improve the numerical stability of some calculations.
 Box and Cox
 
 Data Reduction Techniques: Data reduction techniques are another class of predictor transformations. These methods reduce the data by generating a smaller set of predictors that seek to capture a majority of the information in the original variables.
-
-
-####Week 2
-
-HA Chapter 4
-
-The simple linear model
-
-y=β0+β1x+ε
-
-The parameters β0 and β1 determine the intercept and the slope of the line
-
-
-
 

@@ -233,9 +233,29 @@ The $R^2$ value is 0.541
 
 e) Try building other models discussed in this chapter. Do any have better predictive performance?
 
+```{r}
+ridgeModel <- enet(x = trainFingerprints, y=log10(trainPermeability),lambda = 0.001)
+ridgePred <- predict(ridgeModel, newx =trainFingerprints,s = 1, mode = "fraction",type = "fit")
+head(ridgePred$fit)
 
+plot((ridgePred$fit))
+x <- 0:120;
+lines(x, ridgePred$mean,col="red")
+```
 
+```{r}
+enetModel <- enet(x = as.matrix(trainFingerprints), y = log10(trainPermeability), lambda = 0.01, normalize = TRUE)
+enetPred <- predict(enetModel, newx = as.matrix(trainFingerprints), s = .1, mode = "fraction", type = "fit")
+names(enetPred)
+head(enetPred$fit)
+enetCoef<- predict(enetModel, newx = as.matrix(trainFingerprints), s = .1, mode = "fraction", type = "coefficients")
+tail(enetCoef$coefficients)
+
+plot(enetCoef$coefficients)
+x <- 0:400;
+lines(x, enetCoef$mean,col="red")
+```
 f) Would you recommend any of your models to replace the permeability laboratory experiment?
 
-Elastic net solution the best penalized model choice for this problem.
+The ridge seems to be the best model because there appears to be outliers in the enet model that are not captured in the plot causing the mean to spike immediately.
 

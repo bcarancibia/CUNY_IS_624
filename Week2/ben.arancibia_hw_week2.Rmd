@@ -52,3 +52,101 @@ forecast(fit, newdata=data.frame(temp=c(60)))
 ```
 
 ####HA 5.2
+
+The data below (data set texasgas) shows the demand for natural gas and the price of natural gas for 20 towns in Texas in 1969.
+
+```{r}
+knitr::kable(texasgas)
+```
+
+a) Do a scatterplot of consumption against price.
+
+```{r}
+plot(consumption ~ price, data=texasgas,main="Consumption vs Price", xlab="price ", ylab="consumption ")
+```
+
+b) The slope of the fitted line should change with P, because this is not a linear relationship. It is a non-linear relationship since it is a negatative relationship.
+
+c) Fit the three models and find the coefficients, and residual variance in each case.
+
+Model 1 - Log 
+```{r}
+fit1 <- lm(consumption~price, data=texasgas)
+plot(fitted(fit1), texasgas$price,  main="Consumption vs Price",ylab="consumption", xlab="Predicted Price")
+
+summary(fit1)
+```
+
+Model 2 - Piecewise Linear
+```{r}
+pricep <- pmax(texasgas$price-60,0)
+fit2 <- lm(consumption~price+pricep,data=texasgas)
+x <- 30:100; z <- pmax(x-60,0)
+fcast2 <- forecast(fit2, newdata=data.frame(price=x,pricep=z))
+plot(jitter(consumption)~jitter(price), data=texasgas, main="Consumption vs Price" )
+lines(x, fcast2$mean,col="red")
+
+summary(fit2)
+```
+
+Model 3 - Polynomial nonlinear regression
+
+```{r}
+fit3 <- lm(consumption ~ price + I(price^2), texasgas)
+fcast3 <- forecast(fit3, newdata=data.frame(price=x,pricep=z))
+plot(jitter(consumption)~jitter(price), data=texasgas, main="Consumption vs Price" )
+lines(x, fcast3$mean,col="red")
+
+summary(fit3)
+```
+
+
+d) For each model, find the value of R2 and AIC, and produce a residual plot. Comment on the adequacy of the three models.
+```{r}
+CV(fit1)
+plot(fitted(fit1), residuals(fit1), xlab="price", ylab="Residuals")
+```
+
+```{r}
+CV(fit2)
+plot(fitted(fit2), residuals(fit2), xlab="price", ylab="Residuals")
+```
+
+```{r}
+CV(fit3)
+plot(fitted(fit3), residuals(fit3), xlab="price", ylab="Residuals")
+```
+
+The piecewise linear and polynomial nonlinear regression models have the "best" adjusted R-square values and AIC. It seems that the piecewise linear model does the best explaining the relation of the two variables.
+
+e) For prices 40, 60, 80, 100, and 120 cents per 1,000 cubic feet, compute the forecasted per capita demand using the best model of the three above.
+
+```{r}
+x <- seq(40,120, 20); z <- pmax(x-60,0)
+predicted <- predict(fit2,newdata=data.frame(price=x,pricep=z),interval="prediction")
+matplot(x,predicted,type="l",lty=1,lwd=1.5,col=c("thistle","orange","orange"), xlab="price", ylab="predicted demand", main="Forecasted Per Capita Demand" )
+```
+
+f) Compute 95% prediction intervals. Make a graph of these prediction intervals and discuss their interpretation.
+####Model 1
+```{r}
+confint(fit1,level=0.95)
+```
+
+####Model 2
+```{r}
+confint(fit2,level=0.95)
+```
+
+####Model 3
+```{r}
+confint(fit3,level=0.95)
+```
+
+g) What is the correlation between P and P2? Does this suggest any general problem to be considered in dealing with polynomial regressions---especially of higher orders?
+
+```{r}
+cor(texasgas$price,I(texasgas$price^2))
+```
+
+Since it is almost 1, this suggests an issue of multicollinearity. This means it can be difficult to estimate the regression model, uncertainty associated with individual regression coeffiecients will be large, and forecasts will be unreliable if the values of the future predictors are outside the range of the historical values of the predictors.

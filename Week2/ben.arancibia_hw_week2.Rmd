@@ -259,3 +259,14 @@ f) Would you recommend any of your models to replace the permeability laboratory
 
 The ridge seems to be the best model because there appears to be outliers in the enet model that are not captured in the plot causing the mean to spike immediately.
 
+####Notes: 
+I had a lot of issues trying to build the models in part $e$. My local machine kept hanging on the calculation and become unresponsive.
+
+the below code is the code I tried to run to tune the ridge model but kept hanging my machine.
+```
+ridgeTune <- train(x = trainFingerprints, y = log10(trainPermeability),
++                    method = "ridge",
++                    tuneGrid = ridgeGrid,
++                    trControl = ctrl)
+```
+

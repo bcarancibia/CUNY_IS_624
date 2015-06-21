@@ -124,6 +124,107 @@ y=β0+β1x+ε
 
 The parameters β0 and β1 determine the intercept and the slope of the line
 
+We assume that these errors:
+
+1)have mean zero; otherwise the forecasts will be systematically biased.
+2)are not autocorrelated; otherwise the forecasts will be inefficient as there is more information to be exploited in the data.
+3)are unrelated to the predictor variable; otherwise there would be more information that should be included in the systematic part of the model.
+
+The least squares principle provides a way of choosing β0 and β1 effectively by minimizing the sum of the squared errors. That is, we choose the values of β0 and β1 that minimize
+
+∑i=1Nε2i=∑i=1N(yi−β0−β1xi)2.
+
+β^0=y¯−β^1x¯,
+where x¯ is the average of the x observations and y¯ is the average of the y observations.
+
+The difference between the observed y values and the corresponding fitted values are the “residuals”:
+
+ei=yi−y^i=yi−β^0−β^1xi.
+The residuals have some useful properties including the following two:
+
+∑i=1Nei=0and∑i=1Nxiei=0.
+
+the average of the residuals is zero, and that the correlation between the residuals and the observations for predictor variable is also zero.
+
+r measures the strength and the direction (positive or negative) of the linear relationship between the two variables. The stronger the linear relationship, the closer the observed data points will cluster around a straight line.
+
+correlation and regression are strongly linked. The advantage of a regression model over correlation is that it asserts a predictive relationship between the two variables (x predicts y) and quantifies this in a way that is useful for forecasting.
+
+residual is the unpredictable random component of each observation and is defined as
+ei=yi−y^i,
+
+way to summarize how well a linear regression model fits the data is via the coefficient of determination or R2. This can be calculated as the square of the correlation between the observed y values and the predicted y^ values. 
+
+Another measure of how well the model has fitted the data is the standard deviation of the residuals, which is often known as the “standard error of the regression” 
+
+transforming variables y and/or x and then estimating a regression model using the transformed variables is the simplest way of obtaining a non-linear specification.
+
+Scenario Based Forecasting: forecaster assumes possible scenarios for the predictor variable that are of interest.
+
+Ex ante forecasts are those that are made using only the information that is available in advance. For example, ex ante forecasts of consumption for the four quarters in 2011 should only use information that was available before 2011.
+
+Ex post forecasts are those that are made using later information on the predictors. For example, ex post forecasts of consumption for each of the 2011 quarters may use the actual observations of income for each of these quarters, once these have been observed. These are not genuine forecasts, but are useful for studying the behaviour of forecasting models. 
+
+Linear Trend: regression we can model and forecast the trend in time series data by including t=1,…,T, as a predictor variable:
+yt=β0+β1t+εt.
+
+fit.ex4 <- tslm(austa ~ trend)
+f <- forecast(fit.ex4, h=5,level=c(80,95))
+plot(f, ylab="International tourist arrivals to Australia (millions)",
+  xlab="t")
+lines(fitted(fit.ex4),col="blue")
+summary(fit.ex4)
+
+Residual Autocorrelation: time series data it is highly likely that the value of a variable observed in the current time period will be influenced by its value in the previous period, or even the period before that
+
+it is very common to find autocorrelation in the residuals
+
+Spurious Regression: time series data are “non-stationary”; that is, the values of the time series do not fluctuate around a constant mean or with a constant variance
+
+
+HA - Chapter 5
+
+The general form of a multiple regression is
+yi=β0+β1x1,i+β2x2,i+⋯+βkxk,i+ei,
+where yi is the variable to be forecast and x1,i,…,xk,i are the k predictor variables. Each of the predictor variables must be numerical. The coefficients β1,…,βk measure the effect of each predictor after taking account of the effect of all other predictors in the model. Thus, the coefficients measure the marginal effects of the predictor variables.
+
+As for simple linear regression, when forecasting we require the following assumptions for the errors (e1,…,eN):
+
+the errors have mean zero;
+the errors are uncorrelated with each other;
+the errors are uncorrelated with each predictor xj,i.
+
+As with simple regression, the residuals have zero mean and are uncorrelated with any of the predictors.
+
+Trend: Not recommended that quadratic or higher order trends are used in forecasting. When they are extrapolated, the resulting forecasts are often very unrealistic. Better approach is to use a piecewise linear trend which bends at some time. If the trend bends at time τ
+
+Ex post Ex Ante forecasting: ex ante forecasts are those that are made using only the information that is available in advance, while ex post forecasts are those that are made using later information on the predictors.
+
+Normally, we cannot use future values of the predictor variables when producing ex ante forecasts because their values will not be known in advance. However, the special predictors introduced in this section are all known in advance, as they are based on calendar variables (e.g., seasonal dummy variables or public holiday indicators) or deterministic functions of time.
+
+
+When there are many possible predictors, use a measure of predictive accuracy. Five such measures are below:
+
+Adjusted R-squared or r-bar-squared: Maximizing R¯2 is equivalent to minimizing the following estimate of the variance of the forecast errors:
+σ^2=SSEN−k−1.
+Maximizing R¯2 works quite well as a method of selecting predictors, although it does tend to err on the side of selecting too many predictors.
+
+Cross-validation:
+
+leave-one-out cross-validation for regression can be carried out using the following steps.
+
+Remove observation i from the data set, and fit the model using the remaining data. Then compute the error (e∗i=yi−y^i) for the omitted observation. (This is not the same as the residual because the ith observation was not used in estimating the value of y^i.)
+Repeat step 1 for i=1,…,N.
+Compute the MSE from e∗1,…,e∗N. We shall call this the CV.
+
+Another test of autocorrelation that is designed to take account of the regression model is the Durbin-Watson test. It is used to test the hypothesis that there is no lag one autocorrelation in the residuals. If there is no autocorrelation, the Durbin-Watson distribution is symmetric around 2.
+
+
+KJ Chapter 5
+
+
+
+
 
 
 

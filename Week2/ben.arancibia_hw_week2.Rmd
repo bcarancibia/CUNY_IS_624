@@ -150,3 +150,92 @@ cor(texasgas$price,I(texasgas$price^2))
 ```
 
 Since it is almost 1, this suggests an issue of multicollinearity. This means it can be difficult to estimate the regression model, uncertainty associated with individual regression coeffiecients will be large, and forecasts will be unreliable if the values of the future predictors are outside the range of the historical values of the predictors.
+
+####KJ 6.2
+
+a) Load the necessary data and take a look at it
+```{r}
+library(AppliedPredictiveModeling)
+library(caret)
+library(pls)
+library(elasticnet)
+data(permeability)
+
+hist(permeability, xlab="Permeability")
+```
+
+One thing to notice is the data is skewed, so log-transform the data.
+
+```{r}
+hist(log10(permeability), xlab="log10(Permeability)")
+```
+
+b) The fingerprint predictors indicate the presence or absence of substructures of a molecule and are often sparse meaning that relatively few of the molecules contain each substructure. Filter out the predictors that have low frequencies using the nearZeroVar function from the caret package. How many predictors are left for modeling?
+
+First pre-process the fingerprint predictors remove near-zero variance fingerprint predictors.
+
+```{r}
+nzvfingerprints <- nearZeroVar(fingerprints)
+nonzvfingerprints <- fingerprints[,-nzvfingerprints]
+length(nzvfingerprints)
+ncol(nonzvfingerprints)
+```
+
+There are 719 near-zero variance fingerprints, which means there is 388 left for modeling. This is a significant reduction from the original and indicates that many of the fingerprints are describing unique features of very small subsets of molecules.
+
+c) Split the data into a training and a test set, pre-process the data, and tune a PLS model. How many latent variables are optimal and what is the corresponding resampled estimate of R2?
+
+```{r}
+set.seed(614)
+trainingRows <- createDataPartition(permeability, 
+                                    p = 0.75, 
+                                    list = FALSE)
+
+trainFingerprints <- nonzvfingerprints[trainingRows,]
+trainPermeability <- permeability[trainingRows,]
+
+testFingerprints <- nonzvfingerprints[-trainingRows,]
+testPermeability <- permeability[-trainingRows,]
+```
+
+```{r}
+set.seed(614)
+ctrl <- trainControl(method = "LGOCV")
+
+plsTune <- train(x = trainFingerprints, y = log10(trainPermeability),
+                 method = "pls",
+                 tuneGrid = expand.grid(ncomp = 1:15),
+                 trControl = ctrl)
+
+plsTune
+
+plot(plsTune,metric="Rsquared")
+```
+
+The above plot indicates that the optimal number of latent variables that maximizes $R^2$ is 9 so the $R^2$ value is .57.
+
+d) Predict the response for the test set. What is the test set estimate of R2?
+
+```{r}
+plsTest <- data.frame(Observed=log10(testPermeability),Predicted=predict(plsTune,testFingerprints))
+xyplot(Predicted ~ Observed,
+       plsTest, panel = function(...) {
+         theDots <- list(...)
+         panel.xyplot(..., type = c("p", "g","r","smooth"))
+         corr <- round(cor(theDots$x, theDots$y), 2)
+         panel.text(44, min(theDots$y), paste("corr:", corr))
+         },
+       ylab = "Predicted",
+       xlab = "Observed")
+```
+
+The $R^2$ value is 0.541
+
+e) Try building other models discussed in this chapter. Do any have better predictive performance?
+
+
+
+f) Would you recommend any of your models to replace the permeability laboratory experiment?
+
+Elastic net solution the best penalized model choice for this problem.
+

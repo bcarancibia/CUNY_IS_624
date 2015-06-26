@@ -1,0 +1,39 @@
+---
+title: "Week 3 Homework"
+author: "Ben Arancibia"
+date: "June 23, 2015"
+output: pdf_document
+---
+
+####KJ 7.2
+
+Friedman (1991) introduced several benchmark datasets create by simulation. One of these simulations used the following non--linear equation to create data: 
+
+$y = 10 \sin(\pi x_1x_2) + 20 (x_3 - 0.5)^2 + 10 x_4 + 5 x_5 + N(0, \sigma^2)$
+
+```{r}
+library(mlbench)
+library(caret)
+set.seed(200)
+trainingData <- mlbench.friedman1(200, sd = 1)
+trainingData$x <- data.frame(trainingData$x)
+featurePlot(trainingData$x, trainingData$y)
+testData <- mlbench.friedman1(5000, sd = 1)
+testData$x <- data.frame(testData$x)
+```
+
+Tune several models on these data. For example:
+
+```{r}
+set.seed(921)
+knnModel <- train(x = trainingData$x, y = trainingData$y, method = "knn",
+                  preProc = c("center", "scale"),
+                  tuneLength = 10)
+knnModel
+knnPred <- predict(knnModel, newdata = testData$x)
+postResample(pred = knnPred, obs = testData$y)
+```
+
+Which models appear to give the best performance? Does MARS select the informative predictors (those named X1–X5)?
+
+K-nearest neighbors models are better when predictors and the response relies on the samples' proximity in the predictor space.

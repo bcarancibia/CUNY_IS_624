@@ -36,4 +36,142 @@ postResample(pred = knnPred, obs = testData$y)
 
 Which models appear to give the best performance? Does MARS select the informative predictors (those named X1–X5)?
 
-K-nearest neighbors models are better when predictors and the response relies on the samples' proximity in the predictor space.
+K-nearest neighbors models are better when predictors and the response relies on the samples' proximity in the predictor space. This data does not have geographic information so another model might perform better. Two models to look at are MARS and SVM. 
+
+__MARS Model__
+```{r}
+marsGrid <- expand.grid(degree = 1:2, nprune = seq(2,14,by=2))
+set.seed(921)
+marsModel <- train(x = trainingData$x, y = trainingData$y, method = "earth",
+                   preProc = c("center", "scale"),
+                   tuneGrid = marsGrid)
+marsPred <- predict(marsModel, newdata = testData$x)
+
+plot(marsModel)
+
+postResample(pred = marsPred, obs = testData$y)
+
+marsModel$bestTune$nprune
+marsModel$bestTune$degree
+round(getTrainPerf(marsModel)[1, "TrainRMSE"], 2)
+```
+
+The above plot shows the MARS tuning. There are 14 terms, with degree of 2 and RMSE of 1.57%. To determine which predictors are used in the final model, call the variable importance scores.
+
+```{r}
+varImp(marsModel)
+```
+
+MARS only selects X1-X5 as important predictors.
+
+__SVM__
+
+```{r}
+set.seed(921)
+svmRModel <- train(x = trainingData$x, y = trainingData$y, method = "svmRadial",
+                   preProc = c("center", "scale"),
+                   tuneLength = 8)
+
+svmRPred <- predict(svmRModel, newdata = testData$x)
+
+plot(svmRModel, scales = list(x = list(log = 2)))
+
+postResample(pred = svmRPred, obs = testData$y)
+
+svmRModel$bestTune$C
+svmRModel$bestTune$sigma
+round(getTrainPerf(svmRModel)[1, "TrainRMSE"], 2)
+```
+
+The above plot shows that SVM tuning. The best model has a cost value of 16, sigma value of 0.06046, and an RMSE of 2.05%
+
+Conlusions:
+
+MARS model performs best followed by SVM and then K-NN. This makes sense because the data was not created using neighborhood information.
+
+####KJ 7.4
+
+Return to the permeability problem outlined in Exercise 6.2. Train several nonlinear regression models and evaluate the resampling and test set performance.
+
+```{r}
+library(AppliedPredictiveModeling)
+data(permeability)
+#Identify and remove NZV predictors
+nzvFingerprints = nearZeroVar(fingerprints)
+noNzvFingerprints <- fingerprints[,-nzvFingerprints]
+#Split data into training and test sets
+set.seed(614)
+trainingRows <- createDataPartition(permeability, p = 0.75, list = FALSE)
+              
+trainFingerprints <- noNzvFingerprints[trainingRows,]
+trainPermeability <- permeability[trainingRows,]
+testFingerprints <- noNzvFingerprints[-trainingRows,]
+testPermeability <- permeability[-trainingRows,]
+              
+set.seed(614)
+ctrl <- trainControl(method = "LGOCV")
+
+```
+
+a) Which nonlinear regression model gives the optimal resampling and test set performance?
+
+__MARS__
+
+```{r}
+marsPermGrid <- expand.grid(degree = 1:2, nprune = seq(2,14,by=2))
+marsPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "earth", tuneGrid = marsPermGrid, trControl = ctrl)
+
+plot(marsPermTune,metric="Rsquared")
+
+marsPermTune$results$degree[best(marsPermTune$results, "Rsquared", maximize = TRUE)]
+marsPermTune$results$nprune[best(marsPermTune$results, "Rsquared", maximize = TRUE)]
+round(marsPermTune$results$Rsquared[best(marsPermTune$results, "Rsquared", maximize = TRUE)],2)
+```
+
+The optimal degree that maxmize $R^2$ is 1
+The optimal number of terms that maximize $R^2$ is 8
+$R^2$ value is 0.49
+
+__SVM__
+
+```{r}
+SVMPermGrid <- expand.grid(sigma = c(0.0005,0.001,0.0015), C = seq(1,49,by=6))
+SVMPermTune <- train(x = trainFingerprints, y = log10(trainPermeability),
+                     method = "svmRadial",
+                     trControl = ctrl, 
+                     tuneGrid = SVMPermGrid)
+
+plot(SVMPermTune,metric="Rsquared", scales = list(x = list(log = 2)))
+
+SVMPermTune$results$C[best(SVMPermTune$results, "Rsquared", maximize = TRUE)]
+SVMPermTune$results$sigma[best(SVMPermTune$results, "Rsquared", maximize = TRUE)]
+round(SVMPermTune$results$Rsquared[best(SVMPermTune$results, "Rsquared", maximize = TRUE)],2)
+```
+
+The optimal cost that maxmize $R^2$ is 43
+The optimal sigma maximize $R^2$ is 0.0005
+$R^2$ value is 0.53
+
+__KNN__
+
+```{r}
+knnPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "knn", tuneLength = 10)
+
+plot(knnPermTune,metric="Rsquared")
+
+knnPermTune$results$k[best(knnPermTune$results, "Rsquared", maximize = TRUE)]
+round(knnPermTune$results$Rsquared[best(knnPermTune$results, "Rsquared", maximize = TRUE)],2)
+```
+
+The optimal number of nearest neighbors maxmize $R^2$ is 5
+$R^2$ value is 0.21
+
+
+b) Do any of the nonlinear models outperform the optimal linear model you previously developed in Exercise 6.2? If so, what might this tell you about the underlying relationship between the predictors and the response?
+
+The radial SVM model performs best with a $R^2$ value of 0.53. This is not quite as good as the elastic net model. The results seem to show that there is a relationship between predictors and the responses and most likely best described by a linear structure.
+
+c) Would you recommend any of the models you have developed to replace the permeability laboratory experiment?
+
+I would not recommend any of the models to replace the permeability lab experiment, but if you had to replace it, replace it with the radiam SVM model. 
+

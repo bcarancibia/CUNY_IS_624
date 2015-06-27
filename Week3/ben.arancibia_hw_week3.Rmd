@@ -56,7 +56,7 @@ marsModel$bestTune$degree
 round(getTrainPerf(marsModel)[1, "TrainRMSE"], 2)
 ```
 
-The above plot shows the MARS tuning. There are 14 terms, with degree of 2 and RMSE of 1.57%. To determine which predictors are used in the final model, call the variable importance scores.
+The above plot shows the MARS tuning. There are 14 terms, with degree of 2 and RMSE of 1.43%. To determine which predictors are used in the final model, call the variable importance scores.
 
 ```{r}
 varImp(marsModel)

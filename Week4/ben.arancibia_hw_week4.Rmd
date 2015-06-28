@@ -1,0 +1,30 @@
+---
+title: "Week 4 Assignment"
+author: "Ben Arancibia"
+date: "June 27, 2015"
+output: pdf_document
+---
+
+##KJ 8.1
+
+Recreate the simulated data from Exercise 7.2:
+
+```{r}
+library(mlbench)
+set.seed(200)
+simulated <- mlbench.friedman1(200, sd = 1)
+simulated <- cbind(simulated$x, simulated$y)
+simulated <- as.data.frame(simulated)
+colnames(simulated)[ncol(simulated)] <- "y"
+```
+
+a) Fit a random forest model to all of the predictors, then estimate the variable importance scores:
+
+```{r}
+library(randomForest)
+library(caret)
+model1 <- randomForest(y ~ ., data = simulated, importance = TRUE, ntree = 1000)
+rfImp1 <- varImp(model1, scale = FALSE)
+```
+
+Did the random forest model significantly use the uninformative predic- tors (V6 – V10)?

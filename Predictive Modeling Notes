@@ -224,13 +224,27 @@ KJ Chapter 5
 
 
 
-
-
 KJ Chapter 6
 
 
 KJ Chapter 7
-KJ - 7.2, 7.4
+
+Neural Networks: neural networks have a tendency to over-fit the relationship between the predictors and the response due to the large number of regression coeffi- cients. To combat this issue, several different approaches have been proposed.
+
+1) iterative algorithms for solving for the regression equations can be prematurely halted 
+
+2) Another approach to moderating over-fitting is to use weight decay, a pe- nalization method to regularize the model similar to ridge regression discussed in the last chapter. Here, we add a penalty for large regression coefficients so that any large value must have a significant effect on the model errors to be tolerated.
+
+KJ Chapter 8
+
+Regression Trees and Rule-Based Models
+
+Tree-based models consist of one or more nested if-then statements for the predictors that partition the data. Within these partitions, a model is used to predict the outcome. 
+
+Tree-based and rule-based models are popular modeling tools for a num- ber of reasons. First, they generate a set of conditions that are highly inter- pretable and are easy to implement. Because of the logic of their construction, they can effectively handle many types of predictors (sparse, skewed, contin- uous, categorical, etc.) without the need to pre-process them. In addition, these models do not require the user to specify the form of the predictors’ re- lationship to the response like, for example, a linear regression model requires. Furthermore, these models can effectively handle missing data and implicitly conduct feature selection, characteristics that are desirable for many real-life modeling problems.
+
+Two well-known weaknesses are (1) model instability (i.e., slight changes in the data can drastically change the structure of the tree or rules and, hence, the interpretation) and (2) less-than-optimal predictive perfor- mance.
+
 
 
 

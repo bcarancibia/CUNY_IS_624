@@ -18,8 +18,7 @@ simulated <- as.data.frame(simulated)
 colnames(simulated)[ncol(simulated)] <- "y"
 ```
 
-a) Fit a random forest model to all of the predictors, then estimate the variable importance scores:
-
+a)  Fit a random forest model to all of the predictors, then estimate the variable importance scores:
 ```{r}
 library(randomForest)
 library(caret)
@@ -28,3 +27,189 @@ rfImp1 <- varImp(model1, scale = FALSE)
 ```
 
 Did the random forest model significantly use the uninformative predic- tors (V6 – V10)?
+
+```{r}
+knitr::kable((round(rfImp1,2)))
+```
+
+The model appears to place most importance on variables 1, 2, 4, and 5, and very little importance on 3 and 6 through 10.
+
+b) Now add an additional predictor that is highly correlated with one of the informative predictors. For example:
+```{r}
+simulated$duplicate1 <- simulated$V1 + rnorm(200) * .1
+cor(simulated$duplicate1, simulated$V1)
+```
+
+Fit another random forest model to these data. Did the importance score for V1 change? What happens when you add another predictor that is also highly correlated with V1?
+
+```{r}
+model2 <- randomForest(y ~ ., data = simulated, importance = TRUE, ntree = 1000)
+rfImp2 <- varImp(model2, scale = FALSE)
+              
+vnames <- c('V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'duplicate1')
+              
+names(rfImp1) <- "Original"
+rfImp1$Variable <- factor(rownames(rfImp1), levels = vnames)
+              
+names(rfImp2) <- "Extra"
+rfImp2$Variable <- factor(rownames(rfImp2), levels = vnames)
+
+rfImps <- merge(rfImp1, rfImp2, all = TRUE)
+rownames(rfImps) <- rfImps$Variable
+rfImps$Variable <- NULL
+
+knitr::kable((round(rfImps,2)))
+```
+
+When you add another highly correlated predictor the importance score for V1 drops. 
+
+c) Use the cforest function in the party package to fit a random forest model using conditional inference trees. The party package function varimp can calculate predictor importance. The conditional argument of that func- tion toggles between the traditional importance measure and the modified version described in Strobl et al. (2007). Do these importances show the same pattern as the traditional random forest model?
+
+```{r}
+library(party)
+set.seed(147)
+cforest1 <- cforest(y ~ ., data = simulated[, 1:11], controls = cforest_control(ntree = 1000))
+set.seed(147)
+cforest2 <- cforest(y ~ ., data = simulated, controls = cforest_control(ntree = 1000))
+              
+cfImps1 <- varimp(cforest1)
+cfImps2 <- varimp(cforest2)
+cfImps3 <- varimp(cforest1, conditional = TRUE)
+cfImps4 <- varimp(cforest2, conditional = TRUE)
+
+cfImps1 <- data.frame(Original = cfImps1, Variable = factor(names(cfImps1), levels = vnames))
+              
+cfImps2 <- data.frame(Extra = cfImps2, Variable = factor(names(cfImps2), levels = vnames))
+              
+cfImps3 <- data.frame(CondInf = cfImps3, Variable = factor(names(cfImps3), levels = vnames))
+              
+cfImps4 <- data.frame("CondInf Extra" = cfImps4, Variable = factor(names(cfImps4), levels = vnames))
+              
+cfImps <- merge(cfImps1, cfImps2, all = TRUE)
+cfImps <- merge(cfImps, cfImps3, all = TRUE)
+cfImps <- merge(cfImps, cfImps4, all = TRUE)
+rownames(cfImps) <- cfImps$Variable
+cfImps$Variable <- factor(cfImps$Variable, levels = vnames)
+cfImps <- cfImps[order(cfImps$Variable),]
+cfImps$Variable <- NULL
+
+knitr::kable((round(cfImps,2)))
+```
+
+The conditional inference model has a similar pattern of importance as the random forest model from Part (a), placing most importance on predictors 1, 2, 4, and 5 and very little importance on 3, 6 through 10.  Adding a highly correlated predictor has a detrimenal effect on the importance for $V1$. 
+              
+d) Repeat this process with different tree models, such as boosted trees and Cubist. Does the same pattern occur?
+
+__Boosted Trees__
+```{r}
+library(ipred)
+set.seed(147)
+bagFit1 <- bagging(y ~ ., data = simulated[, 1:11], nbag = 50)
+
+set.seed(147)
+bagFit2 <- bagging(y ~ ., data = simulated, nbag = 50)
+bagImp1 <- varImp(bagFit1)
+names(bagImp1) <- "Original"
+bagImp1$Variable <- factor(rownames(bagImp1), levels = vnames)
+              
+bagImp2 <- varImp(bagFit2)
+names(bagImp2) <- "Extra"
+bagImp2$Variable <- factor(rownames(bagImp2), levels = vnames)
+              
+bagImps <- merge(bagImp1, bagImp2, all = TRUE)
+rownames(bagImps) <- bagImps$Variable
+bagImps$Variable <- NULL
+
+knitr::kable((round(bagImps,2)))
+```
+
+__Cubist Trees__
+
+```{r}
+library(Cubist)
+set.seed(147)
+cbFit1 <- cubist(x = simulated[, 1:10], y = simulated$y, committees = 100)
+              
+cbImp1 <- varImp(cbFit1)
+names(cbImp1) <- "Original"
+cbImp1$Variable <- factor(rownames(cbImp1), levels = vnames)
+              
+set.seed(147)
+cbFit2 <- cubist(x = simulated[, names(simulated) != "y"], y = simulated$y, committees = 100)
+
+cbImp2 <- varImp(cbFit2)
+names(cbImp2) <- "Extra"
+cbImp2$Variable <- factor(rownames(cbImp2), levels = vnames)
+              
+cbImp <- merge(cbImp1, cbImp2, all = TRUE)
+rownames(cbImp) <- cbImp$Variable
+cbImp$Variable <- NULL
+
+knitr::kable((round(cbImp,2)))
+
+```
+
+####KJ 8.6
+
+Return to the permeability problem described in Exercises 6.2 and 7.4. Train several tree-based models and evaluate the resampling and test set performance:
+
+First recreate 6.2 and 7.4.
+
+```{r}
+library(AppliedPredictiveModeling)
+data(permeability)
+              
+#Identify and remove NZV predictors
+nzvFingerprints <- nearZeroVar(fingerprints)
+noNzvFingerprints <- fingerprints[,-nzvFingerprints]
+              
+#Split data into training and test sets
+set.seed(614)
+trainingRows <- createDataPartition(permeability, p = 0.75, list = FALSE)
+              
+trainFingerprints <- noNzvFingerprints[trainingRows,]
+trainPermeability <- permeability[trainingRows,]
+              
+testFingerprints <- noNzvFingerprints[-trainingRows,]
+testPermeability <- permeability[-trainingRows,]
+
+set.seed(614)
+ctrl <- trainControl(method = "LGOCV")
+```
+
+(a) Which tree-based model gives the optimal resampling and test set performance?
+
+__CART__ 
+```{r}
+set.seed(614)
+rpartGrid <- expand.grid(maxdepth= seq(1,10,by=1))
+rpartPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "rpart2", tuneGrid = rpartGrid, trControl = ctrl)
+
+plot(rpartPermTune,metric="Rsquared")
+```
+__RF__ 
+
+```{r}
+set.seed(614)
+rfPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "rf", tuneLength = 10, importance = TRUE, trControl = ctrl)
+
+plot(rfPermTune,metric="Rsquared")
+```
+
+__GBM__ 
+
+```{r}
+set.seed(614)
+gbmGrid <- expand.grid(interaction.depth=seq(1,6,by=1), n.trees=c(25,50,100,200), shrinkage=c(0.01,0.05,0.1))
+gbmPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "gbm", verbose = FALSE,  tuneGrid = gbmGrid, trControl = ctrl)
+
+```
+
+(b) Do any of these models outperform the covariance or non-covariance based regression models you have previously developed for these data? What criteria did you use to compare models’ performance?
+
+```{r}
+rfPermVarImp = varImp(rfPermTune)
+plot(rfPermVarImp, top=10, scales = list(y = list(cex = .85)))
+```
+
+(c) Of all the models you have developed thus far, which, if any, would you recommend to replace the permeability laboratory experiment?

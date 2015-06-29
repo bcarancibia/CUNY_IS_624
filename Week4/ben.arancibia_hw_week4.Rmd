@@ -187,10 +187,12 @@ rpartPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), meth
 
 plot(rpartPermTune,metric="Rsquared")
 ```
+
 __RF__ 
 
 ```{r}
 set.seed(614)
+rpartGrid <- expand.grid(maxdepth= seq(1,10,by=1))
 rfPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "rf", tuneLength = 10, importance = TRUE, trControl = ctrl)
 
 plot(rfPermTune,metric="Rsquared")
@@ -198,11 +200,23 @@ plot(rfPermTune,metric="Rsquared")
 
 __GBM__ 
 
-```{r}
-set.seed(614)
-gbmGrid <- expand.grid(interaction.depth=seq(1,6,by=1), n.trees=c(25,50,100,200), shrinkage=c(0.01,0.05,0.1))
-gbmPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "gbm", verbose = FALSE,  tuneGrid = gbmGrid, trControl = ctrl)
+```{r,eval=FALSE}
 
+######ISSUES WITH THIS NOT WORKING
+####Error in train.default(x = trainFingerprints, y = log10(trainPermeability),  : 
+####The tuning parameter grid should have columns n.trees, interaction.depth, shrinkage, n.minobsinnode
+
+set.seed(614)
+gbmGrid <- expand.grid(interaction.depth=seq(1,6,by=1),
+                                     n.trees=c(25,50,100,200),
+                                     shrinkage=c(0.01,0.05,0.1))
+gbmPermTune <- train(x = trainFingerprints, y = log10(trainPermeability),
+                                   method = "gbm",
+                                   verbose = FALSE,
+                                   tuneGrid = gbmGrid,
+                                   trControl = ctrl)
+
+plot(gbmPermTune,metric="Rsquared")
 ```
 
 (b) Do any of these models outperform the covariance or non-covariance based regression models you have previously developed for these data? What criteria did you use to compare models’ performance?

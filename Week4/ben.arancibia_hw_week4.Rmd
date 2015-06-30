@@ -188,6 +188,7 @@ rpartPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), meth
 plot(rpartPermTune,metric="Rsquared")
 ```
 
+The above plot shows that the tree depth that maximizes $R^2$ is 4, with an $R^2$  of 0.62. This is slightly better than what we found with either the selected linear or non-linear based methods.
 __RF__ 
 
 ```{r}
@@ -197,6 +198,16 @@ rfPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method 
 
 plot(rfPermTune,metric="Rsquared")
 ```
+
+
+The above plot shows that mtry value that maximizes $R^2$ is 388, with an $R^2$ of 0.63. It seems the tuning parameter profile has results to the performance results. The modeling process does not seem to benefit from the reduction in variance induced by random forests. 
+
+```{r}
+rfPermVarImp = varImp(rfPermTune)
+plot(rfPermVarImp, top=10, scales = list(y = list(cex = .85)))
+```
+
+The above plot shows  the variable importance of the top 10 predictors for the random forest model. Clearly a handful of predictors are identified as most important by random forests
 
 __GBM__ 
 
@@ -221,9 +232,6 @@ plot(gbmPermTune,metric="Rsquared")
 
 (b) Do any of these models outperform the covariance or non-covariance based regression models you have previously developed for these data? What criteria did you use to compare models’ performance?
 
-```{r}
-rfPermVarImp = varImp(rfPermTune)
-plot(rfPermVarImp, top=10, scales = list(y = list(cex = .85)))
-```
+
 
 (c) Of all the models you have developed thus far, which, if any, would you recommend to replace the permeability laboratory experiment?

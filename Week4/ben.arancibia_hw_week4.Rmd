@@ -215,23 +215,23 @@ __GBM__
 
 ######ISSUES WITH THIS NOT WORKING
 ####Error in train.default(x = trainFingerprints, y = log10(trainPermeability),  : 
-####The tuning parameter grid should have columns n.trees, interaction.depth, shrinkage, n.minobsinnode
+####The tuning parameter grid should have columns
+####n.trees, interaction.depth, shrinkage, n.minobsinnode
 
 set.seed(614)
-gbmGrid <- expand.grid(interaction.depth=seq(1,6,by=1),
-                                     n.trees=c(25,50,100,200),
-                                     shrinkage=c(0.01,0.05,0.1))
-gbmPermTune <- train(x = trainFingerprints, y = log10(trainPermeability),
-                                   method = "gbm",
-                                   verbose = FALSE,
-                                   tuneGrid = gbmGrid,
-                                   trControl = ctrl)
+gbmGrid <- expand.grid(interaction.depth=seq(1,6,by=1), 
+                       n.trees=c(25,50,100,200), 
+                       shrinkage=c(0.01,0.05,0.1))
+gbmPermTune <- train(x = trainFingerprints, y = log10(trainPermeability), method = "gbm", 
+                     verbose = FALSE, tuneGrid = gbmGrid, trControl = ctrl)
 
 plot(gbmPermTune,metric="Rsquared")
 ```
 
 (b) Do any of these models outperform the covariance or non-covariance based regression models you have previously developed for these data? What criteria did you use to compare models’ performance?
 
-
+A siimplr model like a linear-based technique or a single CART tree provides near optimal results while at the same time easier to understand when compared to the best random forest model. The criteria used is the $R^2$ values and consistency of the importance of variables.
 
 (c) Of all the models you have developed thus far, which, if any, would you recommend to replace the permeability laboratory experiment?
+
+Of all the models so far, the rpart model above with an %R^2$ value of 0.62 performs just as well as other complex models. I would recommend rpart model as a quick and easy to understand replacement for the permeability laboratory experiment.   

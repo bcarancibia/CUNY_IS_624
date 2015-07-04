@@ -234,4 +234,4 @@ A siimplr model like a linear-based technique or a single CART tree provides nea
 
 (c) Of all the models you have developed thus far, which, if any, would you recommend to replace the permeability laboratory experiment?
 
-Of all the models so far, the rpart model above with an %R^2$ value of 0.62 performs just as well as other complex models. I would recommend rpart model as a quick and easy to understand replacement for the permeability laboratory experiment.   
+Of all the models so far, the rpart model above with an $R^2$ value of 0.62 performs just as well as other complex models. I would recommend rpart model as a quick and easy to understand replacement for the permeability laboratory experiment.   

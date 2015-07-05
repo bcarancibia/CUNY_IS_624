@@ -247,8 +247,17 @@ Two well-known weaknesses are (1) model instability (i.e., slight changes in the
 
 
 
+Week 5
 
+HA Chapter 6
 
+3 types of time series patterns:
 
+Trend
+A trend exists when there is a long-term increase or decrease in the data. It does not have to be linear. Sometimes we will refer to a trend “changing direction” when it might go from an increasing trend to a decreasing trend.
+Seasonal
+A seasonal pattern exists when a series is influenced by seasonal factors (e.g., the quarter of the year, the month, or day of the week). Seasonality is always of a fixed and known period.
+Cyclic
+A cyclic pattern exists when data exhibit rises and falls that are not of fixed period. The duration of these fluctuations is usually of at least 2 years.
 
 

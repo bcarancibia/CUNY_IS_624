@@ -1,0 +1,14 @@
+---
+title: "Week 5 Homework"
+author: "Ben Arancibia"
+date: "July 8, 2015"
+output: pdf_document
+---
+
+```{r}
+library(fpp)
+```
+
+####HA 6.1
+
+1) Show that a 3×5 MA is equivalent to a 7-term weighted moving average with weights of 0.067, 0.133, 0.200, 0.200, 0.200, 0.133, and 0.067.

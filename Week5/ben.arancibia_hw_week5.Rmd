@@ -12,3 +12,102 @@ library(fpp)
 ####HA 6.1
 
 1) Show that a 3×5 MA is equivalent to a 7-term weighted moving average with weights of 0.067, 0.133, 0.200, 0.200, 0.200, 0.133, and 0.067.
+
+First do the 7 term weighted moving average
+```{r}
+weights <- (c(0.067, 0.133, 0.200, 0.200, 0.200, 0.133, 0.067))
+
+ma7 <- ma(weights, order=7)
+
+ma7
+```
+
+Next do the 3x5 MA
+```{r}
+ma5 <- ma(weights, order=5)
+ma3x5 <- ma(ma5, order=3)
+```
+
+The reason that 3x5 is equivalent to the 7 term weight moving average is because combinations of moving averages result in weighted moving averages. 
+
+####HA 6.2
+The data below represent the monthly sales (in thousands) of product A for a plastics manufacturer for years 1 through 5 (data set plastics).
+```{r}
+plastics
+```
+
+a) Plot the time series of sales of product A. Can you identify seasonal fluctuations and/or a trend?
+
+```{r}
+plot(plastics)
+```
+
+There is seasonal and upward trend for the product A.
+
+b) Use a classical multiplicative decomposition to calculate the trend-cycle and seasonal indices.
+
+```{r}
+decomp <- decompose(plastics, type="multiplicative")
+
+plot(decomp)
+```
+
+c) Do the results support the graphical interpretation from part (a)?
+
+Yes the results show there is an unchanged seasonanility (third graphic), but there is a tip in the trend that was not noticed in the first plot.
+
+d) Compute and plot the seasonally adjusted data.
+
+```{r}
+sa <- seasadj(decomp)
+plot(sa)
+```
+
+
+e) Change one observation to be an outlier (e.g., add 500 to one observation), and recompute the seasonally adjusted data. What is the effect of the outlier?
+
+```{r}
+x <- plastics
+x[18] <- x[18] + 500
+sa2 <- seasadj(stl(x, s.window="periodic"))
+sa3 <- seasadj(stl(x, s.window="periodic", robust=TRUE))
+plot(sa, col="blue", ylim=range(sa,sa2,sa3))
+lines(sa2,col="red")
+lines(sa3, col="green")
+```
+
+If robust=FALSE, the seasonal adjusted series changes across the whole data set. Notice that there are a lot more differences in the red line compared to the blue line. If robust=TRUE, only the outlying point changes noticeably. There are not that many differences from the blue and green lines compared to the blue line.
+
+f) Does it make any difference if the outlier is near the end rather than in the middle of the time series?
+
+```{r}
+#Repeat above function
+
+x <- plastics
+x[58] <- x[58] + 500 
+sa2 <- seasadj(stl(x, s.window="periodic"))
+sa3 <- seasadj(stl(x, s.window="periodic", robust=TRUE))
+plot(sa, col="blue", ylim=range(sa,sa2,sa3))
+lines(sa2,col="red")
+lines(sa3, col="green")
+```
+
+Having an outlier near the end gives it more impact.
+
+g) Use a random walk with drift to produce forecasts of the seasonally adjusted data.
+
+```{r}
+fc <- stlf(plastics, method="naive")
+plot(fc)
+```
+
+h) Reseasonalize the results to give forecasts on the original scale.
+
+```{r}
+fit <- stl(plastics, s.window="periodic", robust=TRUE)
+fitadj <- seasadj(fit)
+plot(naive(fitadj), xlab="Plastic Product A",
+  main="Naive forecasts of seasonally adjusted data")
+```
+
+

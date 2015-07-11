@@ -110,4 +110,203 @@ plot(naive(fitadj), xlab="Plastic Product A",
   main="Naive forecasts of seasonally adjusted data")
 ```
 
+####HA 7.3
 
+For this exercise, use the quarterly UK passenger vehicle production data from 1977:1--2005:1 (data set ukcars).
+
+a) Plot the data and describe the main features of the series.
+
+```{r}
+plot(ukcars)
+seasonplot(ukcars,year.labels=TRUE, year.labels.left=TRUE, col=rainbow(30))
+monthplot(ukcars)
+```
+
+b) Decompose the series using STL and obtain the seasonally adjusted data.
+
+```{r}
+decomp <- stl(ukcars, s.window=9, robust=TRUE)
+plot(decomp)
+```
+
+c) Forecast the next two years of the series using an additive damped trend method applied to the seasonally adjusted data. Then reseasonalize the forecasts. Record the parameters of the method and report the RMSE of the one-step forecasts from your method.
+
+```{r}
+sadamped <- seasadj(decomp)
+fit <- holt(sadamped, h=8, damped=TRUE)
+plot(fit)
+
+accuracy(fit)
+
+fit$model
+
+twoyear <- rep(decomp$time.series[110:113,"seasonal"],2)
+fc <- fit$mean + twoyear
+plot(ukcars,xlim=c(1980,2007))
+lines(fc, col="blue")
+```
+
+The parameters show a small beta which means the slope isn't changing much over time and a large alpha meaning the intercept is changing quickly.
+
+RMSE of the model is 23.70867
+
+d) Forecast the next two years of the series using Holt's linear method applied to the seasonally adjusted data. Then reseasonalize the forecasts. Record the parameters of the method and report the RMSE of of the one-step forecasts from your method.
+
+```{r}
+sa <- seasadj(decomp)
+fit <- holt(sa, h=8)
+plot(fit)
+
+accuracy(fit)
+
+fit$model
+
+twoyear <- rep(decomp$time.series[110:113,"seasonal"],2)
+fc <- fit$mean + twoyear
+plot(ukcars,xlim=c(1980,2007))
+lines(fc, col="blue")
+```
+
+The parameters are pretty similar compared to the damped time series. The alpha value increased by around .02 and the RMSE of the model increased by .05 (RMSE = 23.75353)
+
+e) Now use ets() to choose a seasonal model for the data.
+
+```{r}
+fit <- ets(ukcars)
+fit
+accuracy(fit)
+
+```
+
+ETS Choose A,N,A an additive seasonal component
+
+f) Compare the RMSE of the fitted model with the RMSE of the model you obtained using an STL decomposition with Holt's method. Which gives the better insample fits?
+
+```{r}
+accuracy(ets(ukcars))
+
+sa <- seasadj(decomp)
+fit <- holt(sa, h=8)
+
+accuracy(fit)
+```
+
+The fitted model using ETS has a higher RMSE value, but not by much. ETS model had 25.24902 and STL Decomp with Holts method had 23.75353
+
+g) Compare the forecasts from the two approaches? Which seems most reasonable?
+
+They are both comparable and don't have that much of a difference. 
+
+####HA 7.4
+
+For this exercise, use the monthly Australian short-term overseas visitors data, May 1985--April 2005. (Data set: visitors.)
+
+a) Make a time plot of your data and describe the main features of the series.
+
+```{r}
+plot(visitors)
+seasonplot(visitors)
+monthplot(visitors)
+plot(stl(log(visitors),s.window="periodic",robust=TRUE))
+```
+
+The dataset visitors is seasonal data with an increasing trend and increasing seasonal fluctuations. Peak seems to be in December, with smaller peak in July,  andowest numbers of visitors in May. Each month has had similar increases over time. Seasonality looks stable. Trend relatively flat in recent years. Big negative outliers in 2003 (fourth chart).
+
+b) Forecast the next two years using Holt-Winters' multiplicative method.
+```{r}
+fc <- hw(visitors,seasonal="mult")
+plot(fc)
+```
+
+c) Why is multiplicative seasonality necessary here?
+
+Multiplicative seasonality is necessary because of the increasing size of the fluctuations and increasing variation with the trend. These two observations were noted above in part (a).
+
+d) Experiment with making the trend exponential and/or damped.
+
+```{r}
+fc1 <- hw(visitors,seasonal="mult",exponential=TRUE)
+fc2 <- hw(visitors,seasonal="mult",exponential=TRUE, damped=TRUE)
+fc3 <- hw(visitors,seasonal="mult",damped=TRUE)
+
+plot(fc1)
+plot(fc2)
+plot(fc3)
+```
+
+e) Compare the RMSE of the one-step forecasts from the various methods. Which do you prefer?
+
+```{r}
+accuracy(fc)
+accuracy(fc1)
+accuracy(fc2)
+accuracy(fc3)
+```
+
+Additive damped trend (fc3) seems to do best (lowest RMSE) amongst these models. However, it has one more parameter (the damping parameter) than the non-damped version. The damped explonential does better than the non-damped model.
+
+g) Now fit each of the following models to the same data: 
+
+multiplicative Holt-Winters' method
+```{r}
+fc <- hw(visitors,seasonal="mult")
+plot(fc)
+```
+
+ETS model
+```{r}
+etsfit <- ets(visitors)
+etsfit
+```
+
+additive ETS model applied to a Box-Cox transformed series
+```{r}
+lambda <- BoxCox.lambda(visitors)
+boxcox <- (BoxCox(visitors,lambda))
+
+etsboxcox <- ets(boxcox)
+
+etsboxcox
+
+plot(etsboxcox)
+```
+
+seasonal naive method applied to the Box-Cox transformed series
+```{r}
+snaive <- snaive(boxcox, h=24)
+
+plot(snaive)
+```
+
+STL decomposition applied to the Box-Cox transformed data 
+
+```{r}
+stlbc <- stl(boxcox, s.window="periodic", robust=TRUE)
+
+boxcox <- seasadj(stlbc)
+decompboxcox <- holt(boxcox, h=8)
+
+plot(decompboxcox)
+```
+
+ETS model applied to the seasonally adjusted (transformed) data.
+
+```{r}
+etsboxcox2 <- ets(boxcox)
+etsboxcox2
+
+plot(etsboxcox2)
+```
+
+g) For each model, look at the residual diagnostics and compare the forecasts for the next two years. Which do you prefer?
+
+```{r}
+accuracy(fc)
+accuracy(etsfit)
+accuracy(etsboxcox)
+accuracy(snaive)
+accuracy(decompboxcox)
+accuracy(etsboxcox2)
+```
+
+The RMSE for the ETS fits are very low, as well as the STL decomp and snaive. This might be as a result of the Box-Cox Transformation. I personally prefer the ETS model because it chooses for you, but the graphics are not as easy to read as compared to the STL decomp and snaive plots. 

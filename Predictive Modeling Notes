@@ -260,4 +260,6 @@ A seasonal pattern exists when a series is influenced by seasonal factors (e.g.,
 Cyclic
 A cyclic pattern exists when data exhibit rises and falls that are not of fixed period. The duration of these fluctuations is usually of at least 2 years.
 
+ the estimate of the trend-cycle at time t is obtained by averaging values of the time series within k periods of t
+
 

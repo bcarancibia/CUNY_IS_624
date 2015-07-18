@@ -268,6 +268,12 @@ A cyclic pattern exists when data exhibit rises and falls that are not of fixed 
 
  HA Chapter 8
 
+ ARIMA Models
+
+ concept of stationarity and the technique of differencing time series.
+
+ A stationary time series is one whose properties do not depend on the time at which the series is observed
+
  Week 6
 
 

@@ -1,0 +1,11 @@
+---
+title: "Week 6 Assignment"
+author: "Ben Arancibia"
+date: "July 18, 2015"
+output: pdf_document
+---
+
+```{r}
+library(fpp)
+```
+####HA 8.1

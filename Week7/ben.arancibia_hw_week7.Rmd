@@ -1,0 +1,182 @@
+---
+title: "Week 7 Assignment"
+author: "Ben Arancibia"
+date: "July 19, 2015"
+output: pdf_document
+---
+
+#Blayney Questions 1-4
+
+1) Compare the two treatment groups (treatment 1 versus treatment 2). Plot the respective survival curves, indicating censored subjects. You can distinguish between the two groups using different colours or different line formats or both. Label both x- and y-axes. Add a suitable title. Also, add a legend indicating which line corresponds to which line format. Finally compare the two survival curves (log-rank) and add a p-value to the bottom-right of the plot.
+
+```{r,tidy=TRUE}
+library(survival)
+data(ovarian)
+
+knitr::kable(ovarian)
+```
+
+Data loaded and now create the plots.
+
+```{r, tidy=TRUE}
+my.KMest4 <- survfit(Surv(futime, fustat)~rx,data=ovarian)
+
+plot(my.KMest4, main="OVARIAN CANCER - OVERALL SURVIVAL", col.main="black", xlab="Time (Days)", ylab="Overall Survival Proportion",col.lab="blue",
+cex.lab=0.9,col=c("red","blue"),mark.time=TRUE, lty = 2:3)
+
+legend(800, .9, title="Legend",c("Treatment Group 1", "Treatment Group 2"), lty = 2:3,col=c("red","blue"),cex=0.7)
+
+survdiff(Surv(futime, fustat) ~ rx, data = ovarian)
+
+legend(800, .2, c("p-value: 0.303"), cex=0.8,box.col="white")
+
+```
+
+2) Load in the Leukaemia-free survival/transplant data-set:
+
+```{r,tidy=TRUE}
+library(KMsurv)
+data(alloauto)
+knitr::kable(head(alloauto))
+```
+
+Compare the two transplant types (allogeneic vs autologous). Plot the respective relapse-free survival curves, indicating censored subjects. You can distinguish between the two groups using different colours or different line formats or both. Label both x- and y-axes. Add a suitable title. Also, add a legend indicating which line corresponds to which line format. Finally compare the two survival curves (log-rank) and add a p-value to the bottom-right of the plot.
+
+```{r,tidy=TRUE}
+my.KMest4 <- survfit(Surv(time, delta)~type,data=alloauto,conf.type="none")
+
+plot(my.KMest4, main="Leukemia - Free Survival", col.main="black", xlab="Time (Months)", ylab="Relapse-Free Survival Proportion",col.lab="blue", cex.lab=0.9 ,col=c("red","blue"),mark.time=TRUE, lty = 2:3) 
+
+survdiff(Surv(time, delta) ~ type, data = alloauto)
+
+legend(50, .9, title="Legend",c("Allogeneic", "Autologous"), lty = 2:3,col=c("red","blue"),cex=0.7)
+
+legend(30, .2, c("p-value: 0.537"), cex=0.8,box.col="white")
+```
+
+3) Recode the age variables (see below) and repeat the univariate and multivariate analyses.
+```{r,tidy=TRUE}
+hmohiv <- read.table("http://www.ats.ucla.edu/stat/R/examples/asa/hmohiv.csv", sep=",", header = TRUE)
+
+hmohiv$time<-as.numeric(as.Date(hmohiv[,7], "%m/%d/%Y")- as.Date(hmohiv[,6], "%m/%d/%Y"))
+hmohiv$time<-round(hmohiv$time/30.5)
+s_obj<-Surv(hmohiv$time, hmohiv$censor)
+#WORK THROUGH EXAMPLE 2.1-2.
+
+drug.coxph <- coxph(Surv(time,censor)~drug, method="efron", data=hmohiv)
+drug_ph <-cox.zph(drug.coxph, transform ='log')
+plot(drug_ph[1,])
+drug_ph
+age.coxph <- coxph(Surv(time,censor)~age, method="efron", data=hmohiv)
+age_ph <-cox.zph(age.coxph, transform ='log')
+plot(age_ph[1,])
+age_ph
+res <- residuals(age.coxph, type='martingale')
+X <- as.matrix(hmohiv[,"age"]) # matrix of covariates
+plot(X[,1], res, xlab=c("Age")[1], ylab="residuals")
+abline(h=0, lty=2) + lines(lowess(X[,1], res, iter=0)) 
+
+library(car)
+
+agecat<-recode(hmohiv$age, "20:29='A'; 30:34='B'; 35:39='C';40:54='D'", as.factor=T)
+agecat.coxph <- coxph( Surv(hmohiv$time, hmohiv$censor)~agecat, method="efron")
+summary(agecat.coxph)
+```
+
+```{r,tidy=TRUE}
+agecat<-recode(hmohiv$age, "20:29='D'; 30:34='B'; 35:39='C';40:54='A'", as.factor=T)
+```
+
+```{r,tidy=TRUE}
+age <- coxph(formula = Surv(hmohiv$time, hmohiv$censor) ~ agecat, method = "efron")
+
+summary(age) 
+
+multi <- coxph(formula = Surv(hmohiv$time, hmohiv$censor) ~ agecat + hmohiv$drug, method = "efron")
+
+summary(multi)
+```
+
+Does using a larger reference group for the age help in any way? What do you notice about the hazard ratios and confidence intervals? Are the p-values or the concordance index affected?
+
+It appears that the pvalues in the univariate and multivariate increase and the larger refernce group for age harms. The harzard ratios and confidence intervals really decrease. Concordance values seem to decrease.
+
+4) For this example, we’ll look at data involving drug treatment programs. 
+
+First, read in the table:
+```{r,tidy=TRUE}
+uis<-read.table("http://www.ats.ucla.edu/stat/R/examples/asa/uis.csv", sep=",", header = TRUE)
+attach(uis)
+knitr::kable(head(uis))
+```
+
+For simplicity, we’ll only work with the variables mentioned above:
+
+```{r,tidy=TRUE}
+uis_small<-uis[,c(1,2,4,6,8,9,11,12)]
+```
+
+For further simplicity, we’ll remove the patients with missing values:
+
+```{r, tidy=TRUE}
+tiny_uis<-uis_small[apply(uis_small,1,function(x)!any(is.na(x))),]
+```
+
+We’ll assume that the two different sites are different centres, so we’ll want to stratify by this variable. You can do this via:
+
+```{r, tidy=TRUE}
+age.coxph <- coxph(Surv(time,censor)~age+strata(site), method="efron", data=tiny_uis)
+```
+
+Now, repeat the univariate analyses for the variables: treat, age, ndrugtx and hercoc. Make a note of the concordance index for each. Create a multivariate model using all four variables. What is the concordance index?
+
+```{r, tidy=TRUE}
+#univariante
+treat<- coxph(Surv(time,censor)~treat, method="efron", data=tiny_uis)
+summary(treat)
+age <- coxph(Surv(time,censor)~age, method="efron", data=tiny_uis)
+summary(age)
+ndrugtx <- coxph(Surv(time,censor)~ndrugtx, method="efron", data=tiny_uis)
+summary(ndrugtx)
+hercoc <- coxph(Surv(time,censor)~hercoc, method="efron", data=tiny_uis)
+summary(hercoc)
+```
+
+Concordances
+
+treat = .537
+
+age = 0.526
+
+ndrugtx = .545
+
+hercoc = .525
+
+```{r, tidy=TRUE}
+#multivariant
+
+fit_four_cox_model<- coxph(Surv(time,censor)~hercoc+treat+age+ndrugtx, method="efron", data=tiny_uis)
+
+summary(fit_four_cox_model)
+```
+
+multi concordance = 0.575
+
+Now run the following (AIC) to determine what variables should be retained:
+
+```{r, tidy=TRUE}
+library(MASS)
+stepAIC(fit_four_cox_model)
+```
+
+What variables are retained? What is the concordance index of the final model?
+
+Variables retained are: Ndugtx,Age,Treat
+
+```{r, tidy=TRUE}
+three <- coxph(Surv(time,censor)~+treat+age+ndrugtx, method="efron", data=tiny_uis)
+
+summary(three)
+```
+
+Ndugtx,Age,Treat:Concordance= 0.577

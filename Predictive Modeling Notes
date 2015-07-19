@@ -274,6 +274,8 @@ A cyclic pattern exists when data exhibit rises and falls that are not of fixed 
 
  A stationary time series is one whose properties do not depend on the time at which the series is observed
 
+ multiple regression model, we forecast the variable of interest using a linear combination of predictors. In an autoregression model, we forecast the variable of interest using a linear combination of past values of the variable. The term autoregression indicates that it is a regression of the variable against itself.
+
  Week 6
 
 

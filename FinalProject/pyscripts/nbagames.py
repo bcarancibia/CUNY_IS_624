@@ -8,9 +8,7 @@ import datetime
 def writeGamelist(season_code,startday,stopday,gamelist):
   # def writeGamelist(filename,date1,date2)
   # assumes date1, date2 are of 'mm-dd-yyyy' format
-  #
   # make dictionary of team names <-> abbreviation
-  #teamAbbrevs = {'Atlanta Hawks':'ATL', 'Boston Celtics':'BOS', 'Brooklyn Nets':'BKN', 'Chicago Bulls':'CHI', 'Charlotte Hornets':'CHA', 'Charlotte Bobcats':'CHA', 'Cleveland Cavaliers':'CLE', 'Dallas Mavericks':'DAL', 'Denver Nuggets':'DEN', 'Detroit Pistons':'DET', 'Golden State Warriors':'GSW', 'Houston Rockets':'HOU', 'Indiana Pacers':'IND', 'Los Angeles Clippers':'LAC', 'Los Angeles Lakers':'LAL', 'Memphis Grizzlies':'MEM', 'Miami Heat':'MIA', 'Milwaukee Bucks':'MIL', 'Minnesota Timberwolves':'MIN', 'New Orleans Pelicans':'NOP', 'New York Knicks':'NYK', 'Oklahoma City Thunder':'OKC', 'Orlando Magic':'ORL', 'Philadelphia 76ers':'PHI', 'Phoenix Suns':'PHX', 'Portland Trail Blazers':'POR', 'Sacramento Kings':'SAC', 'San Antonio Spurs':'SAS', 'Toronto Raptors':'TOR', 'Utah Jazz':'UTA', 'Washington Wizards':'WAS'}
   teamAbbrevs = {'Atlanta Hawks':'ATL', 'Boston Celtics':'BOS', 'Brooklyn Nets':'BKN', 'Chicago Bulls':'CHI', 'Charlotte Hornets':'CHA', 'Charlotte Bobcats':'CHA', 'Cleveland Cavaliers':'CLE', 'Dallas Mavericks':'DAL', 'Denver Nuggets':'DEN', 'Detroit Pistons':'DET', 'Golden State Warriors':'GSW', 'Houston Rockets':'HOU', 'Indiana Pacers':'IND', 'Los Angeles Clippers':'LAC', 'Los Angeles Lakers':'LAL', 'Memphis Grizzlies':'MEM', 'Miami Heat':'MIA', 'Milwaukee Bucks':'MIL', 'Minnesota Timberwolves':'MIN', 'New Orleans Pelicans':'NOP', 'New York Knicks':'NYK', 'Oklahoma City Thunder':'OKC', 'Orlando Magic':'ORL', 'Philadelphia 76ers':'PHI', 'Phoenix Suns':'PHX', 'Portland Trail Blazers':'POR', 'Sacramento Kings':'SAC', 'San Antonio Spurs':'SAS', 'Toronto Raptors':'TOR', 'Utah Jazz':'UTA', 'Washington Wizards':'WAS', 'New Jersey Nets':'NJN', 'New Orleans Hornets':'NOH', 'Charlotte Bobcats':'CHA'}
   delim = ","
   #fw = file("games_" + season_code + ".csv", "w")
@@ -33,7 +31,6 @@ def writeGamelist(season_code,startday,stopday,gamelist):
         html = f.read()
         f.close()
         # parse html to get team codes
-        #ma = re.findall("<th colspan=\"17\">(.+)</th>", html) # good for formatted lines
         ma = re.findall("<th colspan=\"17\">(.*?)</th>", html) # good for non-greedy match, non-formatted lines
         if ma:
           ma[0] = ma[0].split(' (')[0] # drop team record
@@ -120,12 +117,7 @@ def main():
 
   season_code = '00214' # 2014-15 regular season
   date1 = datetime.date(2014,10,28)
-  date2 = datetime.date(2015,03,25)
-
-  season_code = '00214' # 2014-15 regular season
-  date1 = datetime.date(2014,03,26)
-  date2 = datetime.date(2015,03,28)
-  gamelist = "2015latest.csv"
+  date2 = datetime.date(2015,04,15)
 
   writeGamelist(season_code, date1, date2, gamelist)
 

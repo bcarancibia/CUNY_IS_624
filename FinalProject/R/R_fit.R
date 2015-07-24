@@ -1,25 +1,27 @@
-## libraries
+#setup the rscript
 library("matrixcalc")
 library("caTools")
 library("randomForest")
 library("caret")
 
+#####YOU WILL NEED TO CHANGE THIS
 setwd("/users/bcarancibia/CUNY_IS_624/FinalProject")
+#########
 
-## load data
-nba1 = read.csv("/users/bcarancibia/CUNY_IS_624/FinalProject/data/scores_team_00213.csv") # team box scores 2013-14
+#load data
+nba1 = read.csv("data/scores_team_00213.csv") # team box scores 2013-14
 
 summary(nba1)
 
 summary(nba2)
-nba2 = read.csv("/users/bcarancibia/CUNY_IS_624/FinalProject/data/scores_team_00214.csv") # team box scores 2014-15
+nba2 = read.csv("data/scores_team_00214.csv") # team box scores 2014-15
 
 nba <- rbind(nba1,nba2)
 
 summary(nba)
 
-## add data fields
-# set opponent stats in each game:
+#set opponent stats in each game
+#what this does is show the stats of the oponent in the same row of data allows for easier field calculations
 ngames = nrow(nba)
 for (game in seq(1,ngames/2)){
   nba$opts[2*game-1] = nba$pts[2*game]
@@ -50,7 +52,7 @@ for (game in seq(1,ngames/2)){
   nba$otot[2*game] = nba$tot[2*game-1]
 }
 
-# add shooting percentages
+#shooting percentages
 nba$fgpct=nba$fgm/nba$fga * 100 #home team
 nba$X3ppct=nba$X3pm/nba$X3pa * 100 #home team
 nba$ftpct=nba$ftm/nba$fta * 100 #home team
@@ -58,10 +60,10 @@ nba$ofgpct=nba$ofgm/nba$ofga * 100 #away team
 nba$o3ppct=nba$o3pm/nba$o3pa * 100 #away team
 nba$oftpct=nba$oftm/nba$ofta * 100 #away team
 
-# add wins
+#add wins
 nba$win = nba$pts > nba$opts
 
-# add home status
+#add home status
 nba$ishome = (nba$tm == nba$home)
 
 summary(nba)
@@ -70,19 +72,17 @@ str(nba)
 #model1 <- glm(win ~ ., data=nba, family="binomial")
 #rfImp1 <- varImp(model1, scale = FALSE)
 
-#Warning this will take a long time. Variables that are of interested are ishome, fgpct, ofpct, to, oto, tot, otot, win
+#Warning the above will take a long time. Variables that are of interested are ishome, fgpct, ofpct, to, oto, tot, otot, win
 
-# keep only covariates of interest
+#variables of interest
 vars = c("ishome", "fgpct", "ofgpct", "to", "oto", "tot", "otot", "win") # 87.5%
 nbaSub = nba[,vars]
 
-# break into train/test data
-library("caTools")
+# split into train/test data using 70% split ratio
 split = sample.split(nbaSub$win, SplitRatio=0.7)
 nbaTrain = subset(nbaSub, split==TRUE)
 nbaTest = subset(nbaSub, split==FALSE)
-# or use the whole data set as test data
-nbaTest = nbaSub
+
 
 # now predict wins for test data
 nbaLog = glm(win ~ ., data=nbaTrain, family="binomial")
@@ -90,7 +90,6 @@ nbaPredict = predict(nbaLog, newdata=nbaTest, type="response")
 cm = table(nbaTest$win, nbaPredict>0.5)
 cm
 plot(cm, col = "blue", main="Prediction Using GLM")
-library("matrixcalc")
 matrix.trace(cm) / sum(cm)
 summary(nbaLog)
 
@@ -117,13 +116,11 @@ summary(nbaPredict)
 
 summary(nbaMod)
 
-cm = table(nbaTest$win, nbaPredict > 0.5) # if thresholding needed to classify, e.g. log regression
+
 cm = table(nbaTest$win, nbaPredict)
 
 print(cm)
 plot(cm, col = "blue", main="Prediction Using Decision Tree")
-
-library("matrixcalc")
 matrix.trace(cm) / sum(cm)
 summary(nbaMod)
 

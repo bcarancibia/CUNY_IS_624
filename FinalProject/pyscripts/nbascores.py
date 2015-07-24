@@ -6,17 +6,7 @@ import urllib2
 import shutil
 from bs4 import BeautifulSoup # for parsing html
 import socks
-#delim = ","
-#score1 = "lines_00213.csv"
-#score2 = "lines2_00213.csv"
-#fr = open(score1,"r")
-#fw = open(score2,"w")
-#for r in fr.readlines():
-#    r0 = r.split(delim)
-#    r1 = r0[0:-1]
-#    fw.write(delim.join([r0[0], r0[1]]) + "\n")
-#    fw.write(delim.join([r0[0], r0[2]])) # already has newline
-#fw.close()
+
 
 def getAllLines(gamelist, linelist):
   fr = open(gamelist, "r")
@@ -31,7 +21,7 @@ def getAllLines(gamelist, linelist):
     fw.write(gameid + delim + str(line[1]) + "\n")
   fw.close()
 
-def getLine(gameid):   # get final money line from vegasinsider.com 
+def getLine(gameid):   # get final money line from vegasinsider.com for future work
   # dictionary of name conventions used on the site
   teamNames = {"ATL": "hawks", "BOS":"celtics", "BKN":"nets", "CHA":"hornets","CHI":"bulls","CLE":"cavaliers","DAL":"mavericks","DEN":"nuggets","DET":"pistons","GSW":"warriors","HOU":"rockets","IND":"pacers","LAC":"clippers","LAL":"lakers","MEM":"grizzlies","MIA":"heat","MIL":"bucks","MIN":"timberwolves","NOP":"pelicans","NYK":"knicks","OKC":"thunder","ORL":"magic","PHI":"76ers","PHX":"suns","POR":"trail-blazers","SAC":"kings","SAS":"spurs","TOR":"raptors","UTA":"jazz","WAS":"wizards"}  
   date = "-".join([gameid[4:6], gameid[6:8], gameid[2:4]])
@@ -44,7 +34,7 @@ def getLine(gameid):   # get final money line from vegasinsider.com
   with open("tempout.txt", "wb") as outfile:
     shutil.copyfileobj(response, outfile)
   html = open("tempout.txt", "rb").read()
-  # pseudocode:
+  # pseudocode very gross
   # Jump to VI CONSENSUS LINE MOVEMENTS
   # Jump to end of table (header for VI)
   # Get following <TABLE> of lines
@@ -291,9 +281,6 @@ def main():
     teamscorelist = "scores_team_" + season_code + ".csv"
     writeTeamTotals(gamelist, teamscorelist)
 
-    #writescoresCSV(gamelist, scorelist)
-    #writeTeamTotals(gamelist, teamscorelist)
 
-# boilerplate to run on execution
 if __name__ == "__main__":
     main()
